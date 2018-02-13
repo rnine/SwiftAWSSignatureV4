@@ -63,7 +63,7 @@ extension URLRequest {
 	mutating func addPreAuthHeaders(date:Date, signPayload:Bool = false) {
 		//credential
 		//setValue(AWSAccount.credentialString(now:nowComponents), forHTTPHeaderField: "x-amz-credential")
-		setValue(HTTPDate(now:date), forHTTPHeaderField: "Date")
+		setValue(HTTPDate.long(fromDate: date), forHTTPHeaderField: "Date")
 		if let _ = httpBody {
 			if signPayload {
 				//TODO: verify me
@@ -75,19 +75,6 @@ extension URLRequest {
 			//the hash of an empty string
 			setValue("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", forHTTPHeaderField: "x-amz-content-sha256")
 		}
-	}
-	
-	///creates a
-	func HTTPDate(now:Date)->String {
-//        let dayName:String = AWSAccount.calendar.shortWeekdaySymbols[now.weekday! - 1]
-//        let monthShort:String = AWSAccount.calendar.shortMonthSymbols[now.month! - 1]
-//        let year:String = "\(now.year!)"
-//        let day:String = "\(now.day!)".prepadded("0", length: 2)
-//        let hour:String = "\(now.hour!)".prepadded("0", length: 2)
-//        let minute:String = "\(now.minute!)".prepadded("0", length: 2)
-//        let second:String = "\(now.second!)".prepadded("0", length: 2)
-//        return dayName + ", " + day + " " + monthShort + " " + year + " " + hour + ":" + minute + ":" + second + " GMT"
-        return DateFormatter.RFC2822UTC.string(from: now)
 	}
 	
 	///returns sorted key-value tuples
@@ -156,7 +143,7 @@ extension URLRequest {
 	
 	
 	func stringToSign(account:AWSAccount, now:Date, nowComponents:DateComponents, signPayload:Bool)->(string:String, signedHeaders:String)? {
-		let timeString:String = HTTPDate(now: now)
+		let timeString:String = HTTPDate.long(fromDate: now)
 		guard let (request, signedHeaders) = canonicalRequest(signPayload:signPayload) else { return nil }
 		//print("canonical request = \(request)")
 		let hashOfCanonicalRequest:[UInt8] = Digest(using: .sha256).update(string: request)?.final() ?? []
@@ -177,33 +164,5 @@ extension URLRequest {
 		return "AWS4-HMAC-SHA256 Credential=\(account.credentialString(now:nowComponents)),SignedHeaders=\(signedHeaders),Signature=\(signatureHex)"
 	}
 	
-}
-
-extension DateFormatter {
-    public static let ISO8601 : DateFormatter = {
-        let dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZ"
-        return dateFormatter
-    }()
-    
-    public static let ISO8601UTC : DateFormatter = {
-        var dateFormatter = DateFormatter.ISO8601
-        dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-        return dateFormatter
-    }()
-    
-    public static let RFC2822 : DateFormatter = {
-        let rfcDateFormat = DateFormatter()
-        rfcDateFormat.locale = Locale(identifier: "en_US_POSIX")
-        rfcDateFormat.dateFormat = "EEE, dd MMM yyyy HH:mm:ss ZZZZ"
-        return rfcDateFormat
-    }()
-    
-    public static let RFC2822UTC : DateFormatter = {
-        let rfcDateFormat = DateFormatter.RFC2822
-        rfcDateFormat.timeZone = TimeZone(secondsFromGMT: 0)
-        return rfcDateFormat
-    }()
 }
 

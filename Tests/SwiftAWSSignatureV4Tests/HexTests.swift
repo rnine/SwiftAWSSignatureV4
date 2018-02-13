@@ -16,4 +16,23 @@ class HexTests : XCTestCase {
 		}
 	}
 	
+    func testAuth() {
+        let account = AWSAccount(serviceName: "s3", region: "eu-central-1", accessKeyID: "AKIAIQCZHUPNYQHPNYCA", secretAccessKey: "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")
+        
+        var r = URLRequest(url: URL(string:"https://cryptoalerts-data.s3.amazonaws.com/CryptoCompare/SymbolsInfo.json")!)
+        r.httpBody = Data()
+        r.sign(for: account)
+        //print(r.allHTTPHeaderFields)
+        let ex = expectation(description: "")
+        URLSession.shared.dataTask(with: r) { (data, res, err) in
+            print(err)
+            print(res)
+            print(data)
+            ex.fulfill()
+        }.resume()
+        waitForExpectations(timeout: 1000) { (error) in
+            
+        }
+    }
+    
 }
