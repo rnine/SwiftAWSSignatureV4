@@ -27,17 +27,15 @@ open class AWSAccount {
 		self.secretAccessKey = secretAccessKey
 	}
 	
-	func shortDate(now:DateComponents)->String {
-		let month:String = "\(now.month ?? 0)".prepadded("0", length: 2)
-		let day:String = "\(now.day ?? 0)".prepadded("0", length: 2)
-		return "\(now.year ?? 0)" + month + day
+	func shortDate(now:Date)->String {
+        return HTTPDate.short(fromDate: now)
 	}
 	
-	func scope(now:DateComponents)->String {
+	func scope(now:Date)->String {
 		return [shortDate(now:now), region, serviceName, "aws4_request"].joined(separator: "/")
 	}
 	
-	func credentialString(now:DateComponents)->String {
+	func credentialString(now:Date)->String {
 		return accessKeyID + "/" + scope(now:now)
 	}
 	
@@ -50,11 +48,11 @@ open class AWSAccount {
 	}()
 	
 	static func dateComponents(for date:Date)->DateComponents {
-		return calendar.dateComponents([.year, .month, .day, .weekday, .hour, .minute, .second], from: Date())
+		return calendar.dateComponents([.year, .month, .day, .weekday, .hour, .minute, .second], from: date)
 	}
 	
 	///this is a keeper
-	func keyForSigning(now:DateComponents)->[UInt8]? {
+	func keyForSigning(now:Date)->[UInt8]? {
 		guard var keyData:Data = "AWS4".data(using: .utf8)
 			,let secretKeyData = secretAccessKey.data(using: .utf8) else { return nil }
 		keyData.append(secretKeyData)

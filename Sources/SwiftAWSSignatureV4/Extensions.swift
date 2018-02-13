@@ -16,7 +16,9 @@ extension DateFormatter {
     }()
     
     public static let ISO8601UTC : DateFormatter = {
-        var dateFormatter = DateFormatter.ISO8601
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZ"
         dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
         return dateFormatter
     }()
@@ -29,13 +31,16 @@ extension DateFormatter {
     }()
     
     public static let RFC2822UTC : DateFormatter = {
-        let rfcDateFormat = DateFormatter.RFC2822
+        let rfcDateFormat = DateFormatter()
+        rfcDateFormat.locale = Locale(identifier: "en_US_POSIX")
+        rfcDateFormat.dateFormat = "EEE, dd MMM yyyy HH:mm:ss ZZZZ"
         rfcDateFormat.timeZone = TimeZone(secondsFromGMT: 0)
         return rfcDateFormat
     }()
     
     public static let RFC2822UTCShort : DateFormatter = {
-        let rfcDateFormat = DateFormatter.RFC2822
+        let rfcDateFormat = DateFormatter()
+        rfcDateFormat.locale = Locale(identifier: "en_US_POSIX")
         rfcDateFormat.timeZone = TimeZone(secondsFromGMT: 0)
         rfcDateFormat.dateFormat = "yyyyMMdd"
         return rfcDateFormat

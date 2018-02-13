@@ -25,7 +25,6 @@ class HexTests : XCTestCase {
         //print(r.allHTTPHeaderFields)
         let ex = expectation(description: "")
         URLSession.shared.dataTask(with: r) { (data, res, err) in
-            print(err)
             print(res)
             print(data)
             ex.fulfill()
