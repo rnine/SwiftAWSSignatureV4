@@ -95,29 +95,36 @@ extension URLRequest {
 	}
 	
 	
-	func canonicalRequestBeforePayload()->(request:String, signedHeaders:String)? {
-		let verb:String = httpMethod ?? "GET"
-		guard var uriString:String = url?.path else { return nil } 	//TODO: "URI Encode"
-		var queryString:String? = url?.query
-		if queryString?.isEmpty == false {
-			uriString.append("?")
-		}
-		guard let encodedURI:String = uriString.aws_uriEncoded(encodeSlash: false) else { return nil }
-		if let queryLongString = queryString, !queryLongString.isEmpty  {
-			let queryItems:[String] = queryLongString.components(separatedBy: "&")
-			let reconstituted:[String] = queryItems.map{
+	func canonicalRequestBeforePayload() -> (request: String, signedHeaders: String)? {
+		let verb = httpMethod ?? "GET"
+
+        guard let uriString = url?.path else { return nil }
+        guard let encodedURI = uriString.aws_uriEncoded(encodeSlash: false) else { return nil }
+
+        var queryString = url?.query
+
+        if let queryLongString = queryString, !queryLongString.isEmpty {
+            let queryItems = queryLongString.components(separatedBy: "&").sorted()
+
+            let reconstituted = queryItems.map {
 				$0.components(separatedBy: "=")
-					.flatMap{$0.aws_uriEncoded(encodeSlash: true)}
-					.joined(separator: "=")}
+					.compactMap { $0.aws_uriEncoded(encodeSlash: true) }
+					.joined(separator: "=")
+            }
+
 			queryString = reconstituted.joined(separator: "&")
 		}
 		
-		let headerValues:[(String, String)] = canonicalHeaders()
-		var headers:String = headerValues.map { (key, value) -> String in
-			return key + ":" + value
-			}.joined(separator: "\n")
-		headers.append("\n")
-		let signedHeaders:String = headerValues.map({$0.0}).joined(separator: ";")
+		let headerValues = canonicalHeaders()
+
+        let headers = headerValues
+            .map { "\($0):\($1)" }
+            .joined(separator: "\n")
+            .appending("\n")
+
+        let signedHeaders = headerValues
+            .map { $0.0 }
+            .joined(separator: ";")
 		
 		return ([verb, encodedURI, queryString ?? "", headers, signedHeaders].joined(separator: "\n"), signedHeaders)
 	}
